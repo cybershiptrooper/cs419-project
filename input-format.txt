@@ -1,0 +1,1 @@
+python bandit.py --instance ../instances/i-1.txt --algo kl-ucb --seed 1 --epsilon 0.3 --horizon 420
