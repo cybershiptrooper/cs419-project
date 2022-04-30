@@ -14,6 +14,7 @@ https://numpy.org/doc/stable/reference/random/generated/numpy.random.beta.html
 
 sampling algorithms-
 https://arxiv.org/pdf/1904.07272
+https://tor-lattimore.com/downloads/book/book.pdf
 
 good way to compare with fixed precision-
 https://stackoverflow.com/questions/5595425/what-is-the-best-way-to-compare-floats-for-almost-equality-in-python
