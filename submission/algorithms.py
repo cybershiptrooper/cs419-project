@@ -3,10 +3,10 @@ from arms import *
 
 class sampler():
 	"""Various Bandit Sampling algorithms"""
-	def __init__(self, arg, armtype = "Bernoulli"):
+	def __init__(self, arg, armtype = "Stocks"):
 		
 		if armtype == "Stocks":
-			self.arms = stockArms(arg[0])
+			self.arms = stockArms()
 		else:
 			self.arms = bernoulliArms(arg[0])
 		self.algo = arg[1]
