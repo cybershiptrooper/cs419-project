@@ -8,6 +8,7 @@ class sampler(bernoulliArms):
 		self.algo = arg[1]
 		self.seed = int(arg[2])
 		self.eps = float(arg[3])
+		self.improve = bool(arg[4])
 
 	def sample(self):
 		'''choose algo'''
@@ -71,7 +72,7 @@ class sampler(bernoulliArms):
 		arm = argmax(ucb)
 
 		#return seeded reward
-		return self.pull(arm, self.k)
+		return self.pull(arm, self.k, improve = self.improve)
 
 	def klUCB(self, c = 3, precision = 1e-06):
 		#round robin
@@ -109,7 +110,7 @@ class sampler(bernoulliArms):
 		arm = argmax(klucb)
 		
 		#return reward
-		return self.pull(arm, self.k)
+		return self.pull(arm, self.k, improve = self.improve)
 
 	def thompson(self):
 		#create beta choice vector
@@ -118,4 +119,4 @@ class sampler(bernoulliArms):
 		beta = np.random.beta(s+1, f+1)
 		#choose maximal beta as arm and pull
 		arm = np.argmax(beta)
-		return self.pull(arm, self.k)
+		return self.pull(arm, self.k, improve = self.improve)

@@ -21,7 +21,7 @@ def generate_graph(todo):
 			for hz in horizons:
 				regret = 0.0
 				for seed in range(50):
-					args = [i, algo, seed, epsilon, hz]
+					args = [i, algo, seed, epsilon, hz, improve]
 					bandit_instance = bandit(args)
 					REG = bandit_instance.run()
 					regret += REG
