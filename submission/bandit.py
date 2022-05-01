@@ -25,7 +25,7 @@ class bandit(sampler):
 			rewards = self.sample()
 			REW += np.sum(rewards)
 		#regret = reward - expected_optimal 
-		REG = float(self.hz)*self.optimalArm() - REW
+		REG = float(self.hz)*self.arms.optimalArm() - REW
 		return REG#, self.armpulls
 
 def main():

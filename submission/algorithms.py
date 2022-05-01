@@ -1,10 +1,14 @@
 import numpy as np
 from arms import *
 
-class sampler(bernoulliArms):
+class sampler():
 	"""Various Bandit Sampling algorithms"""
-	def __init__(self, arg):
-		super().__init__(arg[0])
+	def __init__(self, arg, armtype = "Bernoulli"):
+		
+		if armtype == "Stocks":
+			self.arms = stockArms(arg[0])
+		else:
+			self.arms = bernoulliArms(arg[0])
 		self.algo = arg[1]
 		self.seed = int(arg[2])
 		self.eps = float(arg[3])
@@ -39,22 +43,22 @@ class sampler(bernoulliArms):
 	#algos
 	def roundRobin(self):
 		'''Pull each arm one time'''
-		for arm in range(self.k):
-			if(self.armpulls[arm] == 0):
-				return self.pull(arm)
+		for arm in range(self.arms.k):
+			if(self.arms.armpulls[arm] == 0):
+				return self.arms.pull(arm)
 		return None
 
 	def epsilonGreedy(self):
 		s = np.random.uniform()
 		if(s < self.eps):
 			#choose random arm
-			arm = np.random.choice(self.k)
+			arm = np.random.choice(self.arms.k)
 		else:
-			#choose a random arm with max Pavg
-			arm = argmax(self.Pavg)
+			#choose a random arm with max arms.Pavg
+			arm = argmax(self.arms.Pavg)
 
 		#return seeded reward
-		return self.pull(arm)
+		return self.arms.pull(arm)
 			
 	def ucb(self):
 		#do round robin if nobody sampled
@@ -62,30 +66,30 @@ class sampler(bernoulliArms):
 		if(not (reward is None)):
 			return reward
 		#calculata uta, ucb
-		pulls = self.armpulls * 1.0
+		pulls = self.arms.armpulls * 1.0
 		uta = np.ones_like(pulls)
-		uta[:] *= ( ((2 * np.log(self.totalPulls))) / pulls[:] )**0.5
-		ucb = self.Pavg + uta
+		uta[:] *= ( ((2 * np.log(self.arms.totalPulls))) / pulls[:] )**0.5
+		ucb = self.arms.Pavg + uta
 
 		#sample max ucb
 		arm = argmax(ucb)
 
 		#return seeded reward
-		return self.pull(arm)
+		return self.arms.pull(arm)
 
 	def klUCB(self, c = 3, precision = 1e-06):
 		#round robin
 		reward = self.roundRobin()
 		if(not (reward is None)): return reward
 
-		klucb = np.zeros(self.k)
-		t = self.totalPulls
+		klucb = np.zeros(self.arms.k)
+		t = self.arms.totalPulls
 		logt_term = np.log(t) + c*np.log(np.log(t))
 
 		#make klucb matrix
-		for i in range(self.k):
-			p = self.Pavg[i]
-			RHS = logt_term / self.armpulls[i]
+		for i in range(self.arms.k):
+			p = self.arms.Pavg[i]
+			RHS = logt_term / self.arms.armpulls[i]
 
 			#boundary
 			if(p == 1 or RHS < 0):
@@ -109,13 +113,13 @@ class sampler(bernoulliArms):
 		arm = argmax(klucb)
 		
 		#return reward
-		return self.pull(arm)
+		return self.arms.pull(arm)
 
 	def thompson(self):
 		#create beta choice vector
 		s = self.Psum; #Sum of rewards = number of success for bernoulli
-		f = self.armpulls - s
+		f = self.arms.armpulls - s
 		beta = np.random.beta(s+1, f+1)
 		#choose maximal beta as arm and pull
 		arm = np.argmax(beta)
-		return self.pull(arm)
+		return self.arms.pull(arm)
