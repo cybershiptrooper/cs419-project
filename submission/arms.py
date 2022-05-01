@@ -31,7 +31,7 @@ class bernoulliArms():
 		return np.max(self.__instances)*self.totalPulls
 
 class stockArms():
-	def __init__(self, file="fortune500.csv", riskAware = False):
+	def __init__(self, file="fortune500.csv", riskAware = True):
 		#stock vars
 		self.stocks=['aapl','amzn','cost','gs','jpm','msft','tgt','wfc','wmt']
 		self.data = pd.read_csv(file, sep=',')
