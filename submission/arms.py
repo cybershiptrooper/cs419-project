@@ -16,9 +16,11 @@ class bernoulliArms():
 		self.armpulls = np.zeros(k)
 		self.totalPulls = 0; #not essential-save time for np.sum(Psum)
 
-	def pull(self, arm, n=1):
+	def pull(self, arm, n=1, n_arms=2):
 		rewards = np.random.binomial(1, self.__instances[arm], n)
-		self.updateArms(arm, rewards)
+		for i in range(n_arms):
+			rew = np.random.binomial(1, self.__instances[i], n)
+			self.updateArms(i, rew)
 		return rewards
 
 	def updateArms(self, arm, rewards):
