@@ -15,7 +15,7 @@ class sampler():
 		self.eps = float(arg[3])
 		self.gamma = 0.05
 		self.alpha = 0.96
-		self.prev_val = 0
+		self.prev_val = np.zeros(self.arms.k)+0.0
 
 	def sample(self):
 		'''choose algo'''
@@ -45,12 +45,15 @@ class sampler():
 	def isclose(a, b, precision=1e-06):
 		return (abs(a-b) <= precision) #and (b>a)
 
-	def cvar(self, X, prev, n, alpha):
+	def cvar(self, prev, n, alpha):
 		beta = 1-alpha
-		X_new = self.arms.get_result(int(n*beta))
-		X_prev = self.arms.get_result(int((n-1)*beta))
-		c_new = (prev + alpha/beta * X_prev)*(n-1)/n - alpha/beta * X_new + X/(n*beta)
-		return c_new
+		X = self.arms.get_result(self.arms.t)
+		c_new = []
+		for i in range(len(n)):
+			X_new = self.arms.get_result(int(n[i]*beta))
+			X_prev = self.arms.get_result(int((n[i]-1)*beta))
+			c_new.append((prev[i])*(n[i]-1)/n[i] + (alpha/beta * X_prev[i])*(n[i]-1)/n[i] - alpha/beta * X_new[i] + X[i]/(n[i]*beta))
+		return  np.array(c_new)
 
 	#algos
 	def roundRobin(self):
@@ -144,8 +147,10 @@ class sampler():
 		pulls = self.arms.armpulls * 1.0
 		uta = np.ones_like(pulls)
 		uta[:] *= ( ((2 * np.log(self.arms.totalPulls))) / pulls[:] )**0.5
-		new_cvar = self.cvar(reward, self.prev_val, self.arms.totalPulls, self.alpha)
-		ucb = self.arms.Pavg + uta + self.gamma * new_cvar
+		new_cvar = self.cvar(self.prev_val, pulls, self.alpha)
+		self.prev_val = new_cvar
+		new_cvar *= (self.gamma)
+		ucb = self.arms.Pavg + uta + new_cvar
 		self.prev_val = new_cvar
 		#sample max ucb
 		arm = argmax(ucb)

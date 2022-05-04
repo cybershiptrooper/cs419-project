@@ -35,7 +35,7 @@ def main():
 	for arg in sys.argv[2::2]:
 		print(arg, end = ", ")
 	run=0
-	seeds = 10
+	seeds = 50
 	for i in range(seeds):
 		bandit_instance = bandit(sys.argv[2::2])
 		bandit_instance.seed = i

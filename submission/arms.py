@@ -78,13 +78,14 @@ class stockArms():
 
 	
 	def stock_open_close(self, t = None):
-		if(t is None): t = self.t
+		assert t is not None
 		return (
 			self.data.filter(regex='-open').loc[t].to_numpy(),
 			self.data.filter(regex='-close').loc[t].to_numpy())
 
-	def reward(self, invest_amount=10):
-		prices= self.stock_open_close()
+	def reward(self, invest_amount=10, t=None):
+		if(t is None): t = self.t
+		prices= self.stock_open_close(t)
 		shares_bought= invest_amount/prices[0]
 		selling_price= shares_bought*prices[1]
 		return selling_price-invest_amount
@@ -93,4 +94,4 @@ class stockArms():
 		return self.bestPulls
 	
 	def get_result(self, t):
-		return self.reward(self.stock_open_close(t))
+		return self.reward(t=t)
