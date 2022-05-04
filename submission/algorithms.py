@@ -13,10 +13,9 @@ class sampler():
 		self.algo = arg[1]
 		self.seed = int(arg[2])
 		self.eps = float(arg[3])
-		self.gamma = ##
-		self.alpha = ##
+		self.gamma = 0.05
+		self.alpha = 0.96
 		self.prev_val = 0
-		self.rewards = []
 
 	def sample(self):
 		'''choose algo'''
@@ -45,11 +44,11 @@ class sampler():
 	def isclose(a, b, precision=1e-06):
 		return (abs(a-b) <= precision) #and (b>a)
 
-	def cvar(X, prev, n, alpha, X_prev, X_new):
+	def cvar(X, prev, n, alpha):
 		##TODO
 		beta = 1-alpha
-		n_new = int(n*beta)
-		n_old = int((n-1)*beta)
+		X_new = self.arms.get_result(int(n*beta))
+		X_prev = self.arms.get_result(int((n-1)*beta))
 		c_new = (prev + alpha/beta * X_prev)*(n-1)/n - alpha/beta * X_new + X/(n*beta)
 		return c_new
 
@@ -76,18 +75,13 @@ class sampler():
 	def ucb(self):
 		#do round robin if nobody sampled
 		reward = self.roundRobin()
-		self.rewards.append(reward)
 		if(not (reward is None)):
 			return reward
 		#calculata uta, ucb
 		pulls = self.arms.armpulls * 1.0
 		uta = np.ones_like(pulls)
 		uta[:] *= ( ((2 * np.log(self.arms.totalPulls))) / pulls[:] )**0.5
-		beta = 1-self.alpha
-		n = self.arms.totalPulls
-		X_prev = self.rewards[int((n-1)*beta)]
-		X_new = self.rewards[int(n*beta)]
-		new_cvar = cvar(reward, self.prev_val, self.arms.totalPulls, self.alpha, X_prev, X_new)
+		new_cvar = cvar(reward, self.prev_val, self.arms.totalPulls, self.alpha)
 		ucb = self.arms.Pavg + uta + self.gamma * new_cvar
 		self.prev_val = new_cvar
 		#sample max ucb
