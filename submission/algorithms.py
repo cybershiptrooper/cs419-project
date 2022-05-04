@@ -4,11 +4,12 @@ from arms import *
 class sampler():
 	"""Various Bandit Sampling algorithms"""
 	def __init__(self, arg, armtype = "Stocks"):
-		
+		if(arg[-1]=="False" or arg[-1]==False): arg[-1] = True
+		else: arg[-1] = False
 		if armtype == "Stocks":
-			self.arms = stockArms()
+			self.arms = stockArms(allArms=arg[-1])
 		else:
-			self.arms = bernoulliArms(arg[0])
+			self.arms = bernoulliArms(arg[0], arg[-1])
 		self.algo = arg[1]
 		self.seed = int(arg[2])
 		self.eps = float(arg[3])
@@ -19,7 +20,7 @@ class sampler():
 		if(self.algo == "ucb"):return self.ucb()
 		if(self.algo == "kl-ucb"):return self.klUCB()
 		if(self.algo == "thompson-sampling"):return self.thompson()
-		return self.hintedThompson()
+		else: raise Exception("Please select correct algorithm")
 
 	#utils
 	global argmax, kl, isclose
@@ -39,6 +40,10 @@ class sampler():
 
 	def isclose(a, b, precision=1e-06):
 		return (abs(a-b) <= precision) #and (b>a)
+
+	def cvar(X, prev, n, alpha):
+		##TODO
+		pass
 
 	#algos
 	def roundRobin(self):
@@ -73,7 +78,6 @@ class sampler():
 
 		#sample max ucb
 		arm = argmax(ucb)
-
 		#return seeded reward
 		return self.arms.pull(arm)
 

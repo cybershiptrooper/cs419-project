@@ -16,7 +16,7 @@ class bandit(sampler):
 	"""
 	def __init__(self, arg):
 		super().__init__(arg[:-1])
-		self.hz = int(arg[4])
+		self.hz = int(arg[-1])
 
 	def run(self, seeded = True):
 		REW = 0.0
@@ -29,17 +29,18 @@ class bandit(sampler):
 		return REG#, self.armpulls
 
 def main():
-	if(len(sys.argv) != 11):
+	if(len(sys.argv) != 13):
 		print("Please enter valid arguments")
 		sys.exit()
 	for arg in sys.argv[2::2]:
 		print(arg, end = ", ")
 	run=0
-	for i in range(50):
+	seeds = 10
+	for i in range(seeds):
 		bandit_instance = bandit(sys.argv[2::2])
 		bandit_instance.seed = i
 		run += (bandit_instance.run())
-	print(run/50)
+	print(run/seeds)
 
 
 if __name__ == '__main__':
