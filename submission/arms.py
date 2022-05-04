@@ -1,3 +1,4 @@
+from tkinter import N
 import numpy as np
 import pandas as pd
 
@@ -76,10 +77,11 @@ class stockArms():
 		self.bestPulls += np.max(rewards)
 
 	
-	def stock_open_close(self):
+	def stock_open_close(self, t = None):
+		if(t is None): t = self.t
 		return (
-			self.data.filter(regex='-open').loc[self.t].to_numpy(),
-			self.data.filter(regex='-close').loc[self.t].to_numpy())
+			self.data.filter(regex='-open').loc[t].to_numpy(),
+			self.data.filter(regex='-close').loc[t].to_numpy())
 
 	def reward(self, invest_amount=10):
 		prices= self.stock_open_close()
@@ -88,4 +90,7 @@ class stockArms():
 		return selling_price-invest_amount
 
 	def best(self):
-		return self.bestPulls #need to change this
+		return self.bestPulls
+	
+	def get_result(self, t):
+		return self.reward(self.stock_open_close(t))
