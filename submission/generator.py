@@ -2,7 +2,7 @@ from bandit import bandit
 import sys
 import time 
 
-methods = ['epsilon-greedy', 'ucb', 'kl-ucb', 'thompson-sampling', 'thompson-sampling-with-hint']
+methods = ['epsilon-greedy', 'ucb', 'kl-ucb', 'thompson-sampling', 'thompson-sampling-with-hint', 'cvar']
 epsilon = 0.02 #0.999, 0.001
 horizons = [102400]#[100, 400, 1600, 6400, 25600, 102400]
 instances = ["../instances/i-1.txt","../instances/i-2.txt", "../instances/i-3.txt",]

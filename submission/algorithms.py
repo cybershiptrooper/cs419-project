@@ -15,7 +15,7 @@ class sampler():
 		self.eps = float(arg[3])
 		self.gamma = 0.05
 		self.alpha = 0.96
-		self.prev_val = 0
+		self.prev_val = [0 for i in range(self.arms.k)]
 
 	def sample(self):
 		'''choose algo'''
@@ -23,6 +23,7 @@ class sampler():
 		if(self.algo == "ucb"):return self.ucb()
 		if(self.algo == "kl-ucb"):return self.klUCB()
 		if(self.algo == "thompson-sampling"):return self.thompson()
+		if(self.algo == "cvar"): return self.ucbCVaR()
 		else: raise Exception("Please select correct algorithm")
 
 	#utils
@@ -44,12 +45,14 @@ class sampler():
 	def isclose(a, b, precision=1e-06):
 		return (abs(a-b) <= precision) #and (b>a)
 
-	def cvar(X, prev, n, alpha):
-		##TODO
+	def cvar(self, prev, n, alpha):
 		beta = 1-alpha
-		X_new = self.arms.get_result(int(n*beta))
-		X_prev = self.arms.get_result(int((n-1)*beta))
-		c_new = (prev + alpha/beta * X_prev)*(n-1)/n - alpha/beta * X_new + X/(n*beta)
+		X = self.arms.get_result(self.arms.t)
+		c_new = []
+		for i in range(len(n)):
+			X_new = self.arms.get_result(int(n[i]*beta))
+			X_prev = self.arms.get_result(int((n[i]-1)*beta))
+			c_new.append((prev[i])*(n[i]-1)/n[i] + (alpha/beta * X_prev[i])*(n[i]-1)/n[i] - alpha/beta * X_new[i] + X[i]/(n[i]*beta))
 		return c_new
 
 	#algos
@@ -81,9 +84,8 @@ class sampler():
 		pulls = self.arms.armpulls * 1.0
 		uta = np.ones_like(pulls)
 		uta[:] *= ( ((2 * np.log(self.arms.totalPulls))) / pulls[:] )**0.5
-		new_cvar = cvar(reward, self.prev_val, self.arms.totalPulls, self.alpha)
-		ucb = self.arms.Pavg + uta + self.gamma * new_cvar
-		self.prev_val = new_cvar
+		ucb = self.arms.Pavg + uta
+
 		#sample max ucb
 		arm = argmax(ucb)
 		#return seeded reward
@@ -134,4 +136,24 @@ class sampler():
 		beta = np.random.beta(s+1, f+1)
 		#choose maximal beta as arm and pull
 		arm = np.argmax(beta)
+		return self.arms.pull(arm)
+
+	def ucbCVaR(self):
+		#do round robin if nobody sampled
+		reward = self.roundRobin()
+		if(not (reward is None)):
+			return reward
+		#calculata uta, ucb
+		pulls = self.arms.armpulls * 1.0
+		uta = np.ones_like(pulls)
+		uta[:] *= ( ((2 * np.log(self.arms.totalPulls))) / pulls[:] )**0.5
+		new_cvar = self.cvar(self.prev_val, pulls, self.alpha)
+		self.prev_val = new_cvar
+		cvar_curr = []
+		for i in new_cvar:
+			cvar_curr.append(i*self.gamma)
+		ucb = self.arms.Pavg + uta + cvar_curr
+		#sample max ucb
+		arm = argmax(ucb)
+		#return seeded reward
 		return self.arms.pull(arm)
